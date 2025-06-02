@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Кредитный калькулятор</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .main {
+            background: #ff984d;
+            padding: 20px;
+            border: 10px outset #ff4d4d;
+			border-radius: 20px;
+            color: #333;
+        }
+
+        .params {
+            margin-bottom: 20px;
+        }
+
+        .input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .title {
+            width: 160px;
+            text-align: right;
+            margin-right: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        input[type="number"], select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 150px;
+            margin: 2px 0;
+        }
+
+        .dop {
+            background: #ffe0b2;
+            padding: 15px;
+            margin-top: 15px;
+            border: 10px outset #ff4d4d;
+			border-radius: 50px;
+        }
+
+        .collapsed {
+            display: none;
+        }
+
+        .result {
+            background: #98fb98;
+            padding: 20px;
+            border: 10px outset #C99EF9;
+			border-radius: 8px;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .result span {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #fff;
+			border: 1px outset #ccc;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #f2f2f2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #ff984d;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .payments-table {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="params">
+            <h3>Параметры кредита</h3>
+            <div class="input">
+                <span class="title">Сумма кредита:</span>
+                <input type="number" id="summa" value="300000" min="1000">
+                <select id="valut" onchange="updateCurrencySymbols()">
+                    <option value="₽">₽</option>
+                    <option value="€">€</option>
+                    <option value="$">$</option>
+                </select>
+            </div>
+            <div class="input">
+                <span class="title">Срок кредита:</span>
+                <input type="number" id="term" value="24" min="1">
+                <select id="termType">
+                    <option>мес.</option>
+                    <option>лет</option>
+                </select>
+            </div>
+            <div class="input">
+                <span class="title">Процентная ставка:</span>
+                <input type="number" id="rate" value="8.5" step="0.1" min="0.1">
+                <select>
+                    <option>% в год</option>
+                </select>
+            </div>
+
+            <div class="dop" id="advancedParams">
+                <div class="input">
+                    <span class="title">Первоначальный взнос:</span>
+                    <input type="number" id="pervonachplat" value="0" min="0">
+                    <select id="typepervonachplat" onchange="updateCurrencySymbol(this)">
+                        <option value="percent">% от суммы кредита</option>
+                        <option value="currency">₽</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <span class="title">Единовременные комиссии:</span>
+                    <input type="number" id="komissii" value="0" min="0">
+                    <select id="Typekomissii" onchange="updateCurrencySymbol(this)">
+                        <option value="percent">% от суммы кредита</option>
+                        <option value="currency">₽</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <span class="title">Ежемесячные комиссии:</span>
+                    <input type="number" id="monthkomissii" value="0" min="0">
+                    <select id="Typemonthkomissii" onchange="updateCurrencySymbol(this)">
+                        <option value="percent">% от суммы кредита</option>
+                        <option value="currency">₽</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <span class="title">Вид платежа:</span>
+                    <select id="Typepayment">
+                        <option>аннуитетный</option>
+                        <option>дифференцированный</option>
+                    </select>
+                </div>
+                <div class="input wrap">
+                    <span class="title">Начало выплат:</span>
+                    <select id="startMonth">
+                        <option>Январь</option>
+                        <option>Февраль</option>
+                        <option>Март</option>
+                        <option>Апрель</option>
+                        <option>Май</option>
+                        <option>Июнь</option>
+                        <option>Июль</option>
+                        <option>Август</option>
+                        <option>Сентябрь</option>
+                        <option>Октябрь</option>
+                        <option>Ноябрь</option>
+                        <option>Декабрь</option>
+                    </select>
+                    <select id="iznachYear">
+                        <option>2025</option>
+                        <option>2026</option>
+                        <option>2027</option>
+                        <option>2028</option>
+                        <option>2029</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn" onclick="toggleAdvanced()">Дополнительные параметры: скрыть</button>
+        </div>
+        <button class="btn" onclick="calculate()">Рассчитать</button>
+    </div>
+    <div class="result" id="result">
+        <div><span>Сумма ежемесячного платежа:</span> -</div>
+        <div><span>Переплата по процентам за кредит:</span> -</div>
+        <div><span>Итоговая переплата за весь период:</span> -</div>
+        <div><span>Полная стоимость кредита, годовых:</span> -</div>
+    </div>
+
+    <div class="payments-table"></div>
+
+    <script>
+        function toggleAdvanced() {
+            const dop = document.getElementById('advancedParams');
+            const btn = event.target;
+            dop.classList.toggle('collapsed');
+            btn.textContent = dop.classList.contains('collapsed') ? 'Дополнительные параметры: показать' : 'Дополнительные параметры: скрыть';
+        }
+        function updateCurrencySymbols() {
+            const currency = document.getElementById('valut').value;
+            const selectors = [
+                '#typepervonachplat',
+                '#Typekomissii',
+                '#Typemonthkomissii'
+            ];
+            selectors.forEach(selector => {
+                const select = document.querySelector(selector);
+                const options = select.options;
+
+                if (options[1]) {
+                    options[1].text = currency;
+                    options[1].value = currency;
+                    if (select.value !== 'percent') {
+                        select.value = currency;
+                    }
+                }
+            });
+        }
+        function updateCurrencySymbol(selectElement) {
+            const currency = document.getElementById('valut').value;
+            const options = selectElement.options;
+            if (options[1] && options[1].value !== '%') {
+                options[1].text = currency;
+                options[1].value = currency;
+            }
+        }
+        function calculate() {
+            const sum = parseFloat(document.getElementById('summa').value);
+            const term = parseFloat(document.getElementById('term').value);
+            const termType = document.getElementById('termType').value;
+            const rate = parseFloat(document.getElementById('rate').value) / 100 / 12;
+            const Typepayment = document.getElementById('Typepayment').value;
+            const startMonth = document.getElementById('startMonth').value;
+            const iznachYear = parseInt(document.getElementById('iznachYear').value);
+            const typepervonachplat = document.getElementById('typepervonachplat').value;
+            const Typekomissii = document.getElementById('Typekomissii').value;
+            const Typemonthkomissii = document.getElementById('Typemonthkomissii').value;
+            const pervonachplat = parseFloat(document.getElementById('pervonachplat').value);
+            const komissii = parseFloat(document.getElementById('komissii').value);
+            const monthkomissii = parseFloat(document.getElementById('monthkomissii').value);
+            let termMonths = termType === 'лет' ? term * 12 : term;
+
+            // Расчеты кредита и таблички и тд
+            const principal = sum - (
+                typepervonachplat === 'percent' 
+                ? sum * pervonachplat / 100 
+                : pervonachplat
+            );
+
+            const commSingle = 
+                Typekomissii === 'percent' 
+                ? sum * komissii / 100 
+                : komissii;
+
+            const commMonthly = 
+                Typemonthkomissii === 'percent' 
+                ? sum * monthkomissii / 100 
+                : monthkomissii;
+
+            let monthlyPayment, totalInterest = 0, totalOverpayment = 0, apr = 0;
+            const payments = [];
+
+            if (Typepayment === 'аннуитетный') {
+                const denominator = (Math.pow(1 + rate, termMonths) - 1) / (rate * Math.pow(1 + rate, termMonths));
+                monthlyPayment = (principal + commSingle) / denominator + commMonthly;
+                let remainingDebt = principal + commSingle;
+                const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                               'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                
+                let currentMonthIndex = months.indexOf(startMonth);
+                
+                for (let i = 0; i < termMonths; i++) {
+                    const interest = remainingDebt * rate;
+                    const principalPart = monthlyPayment - interest - commMonthly;
+                    remainingDebt -= principalPart;             
+                    const monthIndex = (currentMonthIndex + i) % 12;
+                    const year = iznachYear + Math.floor((currentMonthIndex + i) / 12);
+                    payments.push({
+                        date: `${months[monthIndex]}, ${year}`,
+                        payment: monthlyPayment,
+                        principal: principalPart,
+                        interest: interest,
+                        remaining: remainingDebt > 0 ? remainingDebt : 0
+                    });
+                    totalInterest += interest;
+                }
+                totalOverpayment = totalInterest + commSingle + commMonthly * termMonths;
+                apr = ((totalOverpayment / principal) / (termMonths / 12)) * 100;
+            } else {
+                const principalPart = principal / termMonths;
+                totalInterest = 0;
+                let remainingDebt = principal + commSingle;
+                const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                               'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];           
+                let currentMonthIndex = months.indexOf(startMonth);
+                for (let i = 0; i < termMonths; i++) {
+                    const interest = (principal - principalPart * i) * rate;
+                    const currentPayment = principalPart + interest + commMonthly;
+                    const monthIndex = (currentMonthIndex + i) % 12;
+                    const year = iznachYear + Math.floor((currentMonthIndex + i) / 12);
+                    payments.push({
+                        date: `${months[monthIndex]}, ${year}`,
+                        payment: currentPayment,
+                        principal: principalPart,
+                        interest: interest,
+                        remaining: remainingDebt - principalPart > 0 ? remainingDebt - principalPart : 0
+                    });
+                    totalInterest += interest;
+                    remainingDebt -= principalPart;
+                }
+                totalOverpayment = totalInterest + commSingle + commMonthly * termMonths;
+                apr = ((totalOverpayment / principal) / (termMonths / 12)) * 100;
+            }
+            document.getElementById('result').innerHTML = `
+                <div><span>Сумма ежемесячного платежа:</span> ${monthlyPayment.toFixed(2)} ${document.getElementById('valut').value}</div>
+                <div><span>Переплата по процентам за кредит:</span> ${totalInterest.toFixed(2)} ${document.getElementById('valut').value}</div>
+                <div><span>Итоговая переплата за весь период:</span> ${totalOverpayment.toFixed(2)} ${document.getElementById('valut').value}</div>
+                <div><span>Полная стоимость кредита, годовых:</span> ${apr.toFixed(2)} %</div>
+            `;
+            const tableContainer = document.querySelector('.payments-table');
+            tableContainer.innerHTML = ''; 
+            const table = document.createElement('table');
+            const headerRow = table.insertRow();
+            ['№ пл.', 'Дата платежа', 'Сумма платежа', 'Основной долг', 'Начисленные проценты', 'Остаток задолженности'].forEach((header) => {
+                const th = document.createElement('th');
+                th.innerHTML = header;
+                headerRow.appendChild(th);
+            });
+            payments.forEach((payment, index) => {
+                const row = table.insertRow();
+                row.insertCell().innerHTML = index + 1;
+                row.insertCell().innerHTML = payment.date;
+                row.insertCell().innerHTML = payment.payment.toFixed(2);
+                row.insertCell().innerHTML = payment.principal.toFixed(2);
+                row.insertCell().innerHTML = payment.interest.toFixed(2);
+                row.insertCell().innerHTML = payment.remaining.toFixed(2);
+            });
+            const footerRow = table.insertRow();
+            footerRow.style.fontWeight = 'bold';
+            footerRow.insertCell().colSpan = 2;
+            footerRow.insertCell().innerHTML = `Итого по кредиту: ${payments.reduce((sum, p) => sum + p.payment, 0).toFixed(2)}`;
+            footerRow.insertCell().innerHTML = `Итого по кредиту: ${payments.reduce((sum, p) => sum + p.principal, 0).toFixed(2)}`;
+            footerRow.insertCell().innerHTML = `Итого по кредиту: ${payments.reduce((sum, p) => sum + p.interest, 0).toFixed(2)}`;
+            footerRow.insertCell().innerHTML = '-';
+            tableContainer.appendChild(table);
+        }
+    </script>
+</body>
+</html>
